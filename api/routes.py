@@ -18,6 +18,10 @@ def list_ingredients(request: Request):
 def test(request: Request):
     return {"Hello": "Maciej"}
 
+@router3.get("/hello")
+def test(request: Request):
+    return {"Cześć": "Maciej"}
+
 @ingredient_router.post("/create", response_description="Create a new ingredient", status_code=status.HTTP_201_CREATED, response_model=Ingredient)
 def create_ingredient(request: Request, ingredient: Ingredient = Body(...)):
     ingredient = jsonable_encoder(ingredient)
