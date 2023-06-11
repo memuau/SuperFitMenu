@@ -2,26 +2,38 @@ from fastapi import APIRouter, Body, Request, Response, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from typing import List
 
-from models import Book, BookUpdate
+from models import Book, BookUpdate, Ingredient
 
 router = APIRouter()
+ingredient_router = APIRouter()
 
-@router.post("/", response_description="Create a new book", status_code=status.HTTP_201_CREATED, response_model=Book)
-def create_book(request: Request, book: Book = Body(...)):
-    book = jsonable_encoder(book)
-    new_book = request.app.database["books"].insert_one(book)
-    created_book = request.app.database["books"].find_one(
-        {"_id": new_book.inserted_id}
+router3 = APIRouter()
+
+@ingredient_router.get("/", response_description="List all ingredients", response_model=List[Ingredient])
+def list_ingredients(request: Request):
+    ingredients = list(request.app.database["ingredients"].find(limit=100))
+    return ingredients
+
+@router3.get("/test")
+def test(request: Request):
+    return {"Hello": "Maciej"}
+
+@ingredient_router.post("/create", response_description="Create a new ingredient", status_code=status.HTTP_201_CREATED, response_model=Ingredient)
+def create_ingredient(request: Request, ingredient: Ingredient = Body(...)):
+    ingredient = jsonable_encoder(ingredient)
+    new_ingredient = request.app.database["ingredients"].insert_one(ingredient)
+    created_ingredient = request.app.database["ingredients"].find_one(
+        {"_id": new_ingredient.inserted_id}
     )
 
-    return created_book
+    return created_ingredient
 
-
-@router.get("/", response_description="List all books", response_model=List[Book])
-def list_books(request: Request):
-    books = list(request.app.database["books"].find(limit=100))
-    return books
-
+@ingredient_router.get("/{name}", response_description="Get ingredient by name", response_model=List[Ingredient])
+def get_ingredients_by_name(name: str, request:Request):
+    query = {"name": {"$regex": f"{name}", "$options": "i"}}
+    if (ingredients := request.app.database["ingredients"].find(query)) is not None:
+        return list(ingredients)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ingredient with name {name} not found")    
 
 @router.get("/{id}", response_description="Get a single book by id", response_model=Book)
 def find_book(id: str, request: Request):

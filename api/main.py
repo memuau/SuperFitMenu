@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from dotenv import dotenv_values
 from pymongo import MongoClient
-from routes import router as book_router
+from routes import ingredient_router, router3
+import uvicorn
 
 config = dotenv_values(".env")
 
@@ -16,5 +17,8 @@ def startup_db_client():
 def shutdown_db_client():
     app.mongodb_client.close()
 
-app.include_router(book_router, tags=["books"], prefix="/book")
+app.include_router(ingredient_router, tags=["ingredients"], prefix="/ingredient")
+app.include_router(router3, tags=['test'], prefix='/test')
 
+if __name__ == "__main__":
+    uvicorn.run(app, host ="0.0.0.0", port =8000)

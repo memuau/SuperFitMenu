@@ -1,6 +1,26 @@
 import uuid
 from typing import Optional
 from pydantic import BaseModel, Field
+from decimal import Decimal
+from PyObjectId import PyObjectId
+from bson import ObjectId
+
+
+class Ingredient(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    name: str = Field(...)
+    kcal: Decimal = Field(...)
+    protein: Decimal = Field(...)
+    fat: Decimal = Field(...)
+    carbs: Decimal = Field(...)
+    alt_names: list = Field(...)
+
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}        
+
 
 class Book(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
@@ -33,3 +53,4 @@ class BookUpdate(BaseModel):
                 "synopsis": "Don Quixote is a Spanish novel by Miguel de Cervantes..."
             }
         }
+
