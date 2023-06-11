@@ -1,0 +1,42 @@
+name: Trigger auto deployment for super-fit-menu
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/super-fit-menu-AutoDeployTrigger-c2ef7c0b-034d-4bda-b758-4c57c7d0012b.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.SUPERFITMENU_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: superfitmenu.azurecr.io
+          registryUsername: ${{ secrets.SUPERFITMENU_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.SUPERFITMENU_REGISTRY_PASSWORD }}
+          containerAppName: super-fit-menu
+          resourceGroup: Maciej
+          imageToBuild: superfitmenu.azurecr.io/super-fit-menu:${{ github.sha }}
+          
+
+     
+
